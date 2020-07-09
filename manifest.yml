@@ -1,0 +1,6 @@
+---
+applications:
+- name: talkshow
+  memory: 350MB
+  random-route: true
+  disk_quota: 500MB
