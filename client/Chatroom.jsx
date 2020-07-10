@@ -6,10 +6,13 @@ import FloatingActionButton from 'material-ui/FloatingActionButton';
 import FontIcon from 'material-ui/FontIcon';
 import SpeakerNotesIcon from 'material-ui/svg-icons/action/speaker-notes';
 import ExitToApp from 'material-ui/svg-icons/action/exit-to-app';
-import Barrage from './bullet/Barrage';
+import ChatIcon from 'material-ui/svg-icons/communication/chat';
+//import Barrage from './bullet/Barrage';
+import BulletScreen from './bullet/BulletScreen';
 import Avatar from 'material-ui/Avatar';
 import Divider from 'material-ui/Divider';
 import { List, ListItem } from 'material-ui/List';
+import Snackbar from 'material-ui/Snackbar';
 
 import Overlay from './Overlay';
 
@@ -85,11 +88,6 @@ const Scrollable = styled.div`
     overflow: auto;
 `
 
-const colorConfig = {
-    random: false,
-    colorList: ['red', 'yellow', 'white']
-}
-
 export default class Chatroom extends React.Component {
     constructor(props, context) {
         super(props, context)
@@ -99,7 +97,9 @@ export default class Chatroom extends React.Component {
         this.state = {
             chatHistory,
             input: '',
-            switchToChatList: false
+            switchToChatList: false,
+            toggleNotification: false,
+            errorMessage: ''
         }
 
         this.onInput = this.onInput.bind(this)
@@ -107,16 +107,22 @@ export default class Chatroom extends React.Component {
         this.onMessageReceived = this.onMessageReceived.bind(this)
         this.updateChatHistory = this.updateChatHistory.bind(this)
         this.switchDisplayMode = this.switchDisplayMode.bind(this)
-        //this.scrollChatToBottom = this.scrollChatToBottom.bind(this)
+        this.scrollChatToBottom = this.scrollChatToBottom.bind(this)
     }
 
     componentDidMount () {
         this.props.registerHandler(this.onMessageReceived)
+        /*setInterval(() => {
+            this.barrage.push({
+                text: Math.random() * 1000 | 0
+            })
+        }, 1000 * 1);*/
         //this.scrollChatToBottom()
     }
 
     componentDidUpdate () {
-        //this.scrollChatToBottom()
+        if (this.state.switchToChatList)
+            this.scrollChatToBottom()
     }
 
     componentWillUnmount () {
@@ -132,10 +138,21 @@ export default class Chatroom extends React.Component {
     onSendMessage () {
         if (!this.state.input)
             return
+        //let newMessage = JSON.parse(JSON.stringify(this.state.input));
+        /*if (this.barrage) {
+            this.barrage.push({
+                text: newMessage
+            });
+        }*/
 
         this.props.onSendMessage(this.state.input, (err) => {
-            if (err)
+            if (err) {
+                this.setState({
+                    toggleNotification: true,
+                    errorMessage: err
+                })
                 return console.error(err)
+            }
 
             return this.setState({ input: '' })
         })
@@ -144,10 +161,14 @@ export default class Chatroom extends React.Component {
     onMessageReceived (entry) {
         console.log('onMessageReceived:', entry)
         this.updateChatHistory(entry)
+        if (this.barrage && entry.message) {
+            this.barrage.push({
+                text: entry.message
+            });
+        }
     }
 
     updateChatHistory (entry) {
-
         this.setState({ chatHistory: this.state.chatHistory.concat(entry) })
     }
 
@@ -187,8 +208,15 @@ export default class Chatroom extends React.Component {
                 </List>
             </Scrollable>)
         } else {
-            return <Barrage barrageList={this.state.chatHistory} color={colorConfig} />
+            return <BulletScreen ref={r => this.barrage = r} width={1324} height={650} />
+            //return <Barrage message={this.state.newMessage} onBulletStart={() => this.setState({ newMessage: "" })} />
         }
+    }
+    handleRequestClose () {
+        this.setState({
+            toggleNotification: false,
+            errorMessage: ''
+        })
     }
     render () {
         //console.log(this.state.chatHistory)
@@ -236,18 +264,14 @@ export default class Chatroom extends React.Component {
                                 rowsMax={4}
                                 onChange={this.onInput}
                                 value={this.state.input}
+                                inputStyle={{ color: '#fafafa' }}
                                 onKeyPress={e => (e.key === 'Enter' ? this.onSendMessage() : null)}
                             />
                             <FloatingActionButton
                                 onClick={this.onSendMessage}
                                 style={{ marginLeft: 20 }}
                             >
-                                <FontIcon
-                                    style={{ fontSize: 32 }}
-                                    className="material-icons"
-                                >
-                                    {'chat_bubble_outline'}
-                                </FontIcon>
+                                <ChatIcon />
                             </FloatingActionButton>
                         </InputPanel>
                     </ChatPanel>
@@ -256,6 +280,12 @@ export default class Chatroom extends React.Component {
                         background="#111111"
                     />
                 </ChatWindow>
+                <Snackbar
+                    open={this.state.toggleNotification}
+                    message={this.state.errorMessage}
+                    autoHideDuration={2000}
+                    onRequestClose={this.handleRequestClose}
+                />
             </div>
         )
     }

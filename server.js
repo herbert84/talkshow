@@ -1,5 +1,14 @@
 var express = require('express');
+//var passport = require('passport');
+//var JWTStrategy = require('@sap/xssec').JWTStrategy;
+//var xsenv = require('@sap/xsenv');
+
 var app = express();
+
+//passport.use(new JWTStrategy(xsenv.getServices({ uaa: { tag: 'xsuaa' } }).uaa));
+
+//app.use(passport.initialize());
+//app.use(passport.authenticate('JWT', { session: false }));
 
 var server = require('http').createServer(app);
 var io = require('socket.io').listen(server);

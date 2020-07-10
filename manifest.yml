@@ -4,3 +4,22 @@ applications:
   memory: 350MB
   random-route: true
   disk_quota: 500MB
+  services:
+    - myuaa
+
+- name: web
+  routes:
+  - route: talkshow-quick-raven-pi.cfapps.sap.hana.ondemand.com
+  path: web
+  memory: 128M
+  env:
+    destinations: >
+      [
+        {
+          "name":"talkshow",
+          "url":"https://talkshow-quick-raven-pi.cfapps.sap.hana.ondemand.com/",
+          "forwardAuthToken": true
+        }
+      ]
+  services:
+    - myuaa

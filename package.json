@@ -7,7 +7,7 @@
         "build": "webpack --progress --colors --display-error-details",
         "clean": "rimraf public/*bundle* public/*vendor* public/*index*",
         "prod": "cross-env NODE_ENV=production webpack --progress --colors --config webpack.config.prod.js -p --display-error-details",
-        "server": "node ./server/server.js",
+        "server": "node ./server.js",
         "client": "webpack-dev-server"
     },
     "keywords": [
@@ -20,6 +20,9 @@
     "author": "Herbert ZHAO",
     "license": "MIT",
     "dependencies": {
+        "@sap/approuter": "^8.2.1",
+        "@sap/xsenv": "^3.0.0",
+        "@sap/xssec": "^3.0.6",
         "babel-core": "^6.26.0",
         "babel-loader": "^7.1.2",
         "babel-polyfill": "^6.26.0",
@@ -33,6 +36,7 @@
         "extract-text-webpack-plugin": "^3.0.2",
         "html-webpack-plugin": "^3.2.0",
         "material-ui": "^0.20.0",
+        "passport": "^0.4.1",
         "react": "^16.13.1",
         "react-dom": "^16.13.1",
         "react-hot-loader": "^3.1.3",

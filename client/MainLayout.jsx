@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import Avatar from 'material-ui/Avatar';
-import FontIcon from 'material-ui/FontIcon';
+import PersonIcon from 'material-ui/svg-icons/social/person';
 
 import FullScreen from './FullScreen';
 import Overlay from './Overlay';
@@ -70,12 +70,7 @@ function renderAvatar (user) {
         ? { src: user.image }
         : {
             icon:
-                <FontIcon
-                    style={{ fontSize: 96 }}
-                    className="material-icons"
-                >
-                    {'perm_identity'}
-                </FontIcon>
+                <PersonIcon />
         }
 
     return <Avatar size={160} {...props} />
