@@ -1,9 +1,0 @@
-{
-    "routes": [
-        {
-            "source": "^/talkshow/(.*)$",
-            "target": "$1",
-            "destination": "talkshow"
-        }
-    ]
-}

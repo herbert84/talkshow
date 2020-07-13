@@ -39,7 +39,7 @@ export default class UserSelection extends React.Component {
     render () {
         const actions = [
             <FlatButton
-                label="Cancel"
+                label="关闭"
                 primary
                 onClick={this.props.close}
             />

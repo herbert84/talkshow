@@ -77,7 +77,7 @@ function renderAvatar (user) {
 }
 
 function fullName (user) {
-    return user ? `${user.name} ${user.lastName}` : 'Who are you?'
+    return user ? `${user.name} ${user.lastName}` : '请选择用户'
 }
 
 export default ({ children, user }) => (

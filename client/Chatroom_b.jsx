@@ -1,18 +1,18 @@
 import React from 'react';
 import styled from 'styled-components'
+import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField';
-import FlatButton from 'material-ui/FlatButton';
 import FloatingActionButton from 'material-ui/FloatingActionButton';
 import FontIcon from 'material-ui/FontIcon';
-import SpeakerNotesIcon from 'material-ui/svg-icons/action/list';
-import ExitToApp from 'material-ui/svg-icons/navigation/arrow-back';
+import SpeakerNotesIcon from 'material-ui/svg-icons/action/speaker-notes';
+import ExitToApp from 'material-ui/svg-icons/action/exit-to-app';
 import ChatIcon from 'material-ui/svg-icons/communication/chat';
+//import Barrage from './bullet/Barrage';
+import BulletScreen from './bullet/BulletScreen';
 import Avatar from 'material-ui/Avatar';
 import Divider from 'material-ui/Divider';
 import { List, ListItem } from 'material-ui/List';
 import Snackbar from 'material-ui/Snackbar';
-import Dialog from 'material-ui/Dialog';
-import Loader from './Loader'
 
 import Overlay from './Overlay';
 
@@ -62,6 +62,7 @@ const OutputText = styled.div`
   overflow: initial !important;
   width: 100%;
   height: auto !important;
+  color: #fafafa !important;
 `
 
 const InputPanel = styled.div`
@@ -80,7 +81,9 @@ const ChatroomImage = styled.img`
 `
 
 const Scrollable = styled.div`
-    height:500px;
+    position:absolute;
+    top:82px;
+    bottom:115px;
     width:100%;
     overflow: auto;
 `
@@ -98,10 +101,7 @@ export default class Chatroom extends React.Component {
             toggleNotification: false,
             errorMessage: ''
         }
-        this.msgs = [];
-        this.c_width = 1324;
-        this.c_height = 650;
-        this.myCanvas = React.createRef();
+
         this.onInput = this.onInput.bind(this)
         this.onSendMessage = this.onSendMessage.bind(this)
         this.onMessageReceived = this.onMessageReceived.bind(this)
@@ -112,28 +112,21 @@ export default class Chatroom extends React.Component {
 
     componentDidMount () {
         this.props.registerHandler(this.onMessageReceived)
-        //循环擦写画布实现动画效果
-        let _this = this;
-        this.timer = setInterval(function () {
-            let canvas = _this.myCanvas.current;
-            if (canvas) {
-                let ctx = canvas.getContext("2d");
-                ctx.clearRect(0, 0, _this.c_width, _this.c_height);
-                ctx.save();
-                for (var i = 0; i < _this.msgs.length; i++) {
-                    if (_this.msgs[i] != null) {
-                        _this.handleDefault(_this.msgs[i]);
+        /*setInterval(() => {
+            this.barrage.push({
+                text: Math.random() * 1000 | 0
+            })
+        }, 1000 * 1);*/
+        //this.scrollChatToBottom()
+    }
 
-                    }
-                }
-            }
-        }, 20)
+    componentDidUpdate () {
+        if (this.state.switchToChatList)
+            this.scrollChatToBottom()
     }
 
     componentWillUnmount () {
         this.props.unregisterHandler()
-        let _this = this;
-        clearInterval(_this.timer);
     }
 
     onInput (e) {
@@ -145,6 +138,12 @@ export default class Chatroom extends React.Component {
     onSendMessage () {
         if (!this.state.input)
             return
+        //let newMessage = JSON.parse(JSON.stringify(this.state.input));
+        /*if (this.barrage) {
+            this.barrage.push({
+                text: newMessage
+            });
+        }*/
 
         this.props.onSendMessage(this.state.input, (err) => {
             if (err) {
@@ -162,8 +161,11 @@ export default class Chatroom extends React.Component {
     onMessageReceived (entry) {
         console.log('onMessageReceived:', entry)
         this.updateChatHistory(entry)
-        var tempBarrage = new this.Barrage(entry.message);
-        this.msgs.push(tempBarrage);
+        if (this.barrage && entry.message) {
+            this.barrage.push({
+                text: entry.message
+            });
+        }
     }
 
     updateChatHistory (entry) {
@@ -174,13 +176,8 @@ export default class Chatroom extends React.Component {
         this.panel.scrollTo(0, this.panel.scrollHeight)
     }
     switchDisplayMode () {
-        let _this = this;
         this.setState({
-            switchToChatList: true
-        }, () => {
-            setTimeout(() => {
-                _this.scrollChatToBottom()
-            }, 100)
+            switchToChatList: !this.state.switchToChatList
         })
     }
     renderChatWindow () {
@@ -211,7 +208,8 @@ export default class Chatroom extends React.Component {
                 </List>
             </Scrollable>)
         } else {
-            return <canvas ref={this.myCanvas} width="1324px" height="650px"></canvas>
+            return <BulletScreen ref={r => this.barrage = r} width={1324} height={650} />
+            //return <Barrage message={this.state.newMessage} onBulletStart={() => this.setState({ newMessage: "" })} />
         }
     }
     handleRequestClose () {
@@ -220,99 +218,40 @@ export default class Chatroom extends React.Component {
             errorMessage: ''
         })
     }
-    closeHistory () {
-        this.setState({
-            switchToChatList: false
-        })
-    }
-    //
-    //弹幕功能部分代码
-    //
-    //弹幕对象
-    Barrage (content) {
-        this.content = content;
-        this.color = '#' + Math.floor(Math.random() * 0xffffff).toString(16);
-        this.speed = parseInt(Math.random() * 5);
-        this.size = parseInt(Math.random() * (35 - 10 + 1) + 10, 0) + "px  Courier New";
-        this.c_height = 650;
-        this.height = parseInt(Math.random() * this.c_height) + 10;
-
-    }
-    //处理默认弹幕样式
-    handleDefault (barrage) {
-        let _this = this;
-        let canvas = this.myCanvas.current;
-        let ctx = canvas.getContext("2d");
-        if (barrage.left == undefined || barrage.left == null) {
-            barrage.left = _this.c_width;
-        } else {
-            if (barrage.left < -200) {
-                barrage = null;
-            } else {
-                //barrage.move()
-                barrage.left = barrage.left - barrage.speed;
-                ctx.fillStyle = barrage.color;
-                ctx.font = barrage.size;
-                ctx.fillText(barrage.content, barrage.left, barrage.height)
-                ctx.restore();
-            }
-        }
-    }
-    renderChatItemWithAvatar () {
-        return <ListItem
-            key={i}
-            leftAvatar={<Avatar src={user.image} />}
-            primaryText={`${user.name} ${event || ''}`}
-            secondaryText={
-                message &&
-                <OutputText>
-                    {message}
-                </OutputText>
-            }
-        />
-    }
     render () {
-        const actions = [
-            <FlatButton
-                label="关闭"
-                primary
-                onClick={() => this.closeHistory()}
-            />
-        ]
         //console.log(this.state.chatHistory)
         return (
             <div style={{ position: 'absolute', left: '200px', height: '100%', width: '1124px' }}>
                 <ChatWindow>
                     <Header>
-                        <FlatButton
-                            primary
-                            icon={
-                                <ExitToApp />
-                            }
-                            label="离开房间"
-                            style={{ color: "white" }}
-                            onClick={this.props.onLeave}
-                        />
                         <Title>
                             {this.props.chatroom.name}
                         </Title>
-                        <FlatButton
-                            primary
-                            icon={
-                                <SpeakerNotesIcon />
-                            }
-                            label="查看历史"
-                            secondary={true}
-                            style={{ marginRight: '10px', color: "white" }}
-                            onClick={this.switchDisplayMode}
-                        />
+                        <div>
+                            <RaisedButton
+                                primary
+                                icon={
+                                    <SpeakerNotesIcon />
+                                }
+                                style={{ marginRight: '10px' }}
+                                onClick={this.switchDisplayMode}
+                            />
+                            <RaisedButton
+                                primary
+                                icon={
+                                    <ExitToApp />
+                                }
+                                onClick={this.props.onLeave}
+                            />
+                        </div>
                     </Header>
                     <ChatroomImage
                         src={this.props.chatroom.image}
                         alt=""
                     />
                     <ChatPanel>
-                        <canvas ref={this.myCanvas} width="1324px" height="650px"></canvas>
+                        {this.renderChatWindow()}
+
                         <InputPanel>
                             <TextField
                                 textareaStyle={{ color: '#fafafa' }}
@@ -341,45 +280,6 @@ export default class Chatroom extends React.Component {
                         background="#111111"
                     />
                 </ChatWindow>
-                <Dialog
-                    title="弹幕历史"
-                    actions={actions}
-                    modal={false}
-                    open={this.state.switchToChatList}
-                    onRequestClose={() => this.closeHistory()}
-                >
-                    {
-                        !this.state.chatHistory
-                            ? <Loader />
-                            : (
-                                <Scrollable innerRef={(panel) => { this.panel = panel; }}>
-                                    <List>
-                                        {
-                                            this.state.chatHistory.map(
-                                                ({ user, message, event }, i) => {
-                                                    if (message) {
-                                                        return [
-                                                            <NoDots>
-                                                                <ListItem
-                                                                    key={i}
-                                                                    leftAvatar={<Avatar src={user.image} />}
-                                                                    primaryText={
-                                                                        message &&
-                                                                        <OutputText>
-                                                                            {message}
-                                                                        </OutputText>
-                                                                    }
-                                                                />
-                                                            </NoDots>,
-                                                            <Divider inset />
-                                                        ]
-                                                    }
-                                                }
-                                            )
-                                        }</List></Scrollable>
-                            )
-                    }
-                </Dialog>
                 <Snackbar
                     open={this.state.toggleNotification}
                     message={this.state.errorMessage}
