@@ -20,9 +20,9 @@
     "author": "Herbert ZHAO",
     "license": "MIT",
     "dependencies": {
-        "@sap/approuter": "^8.2.1",
+        "@sap/approuter": "^13.0.1",
         "@sap/xsenv": "^3.0.0",
-        "@sap/xssec": "^3.0.6",
+        "@sap/xssec": "^3.2.15",
         "babel-core": "^6.26.0",
         "babel-loader": "^7.1.2",
         "babel-polyfill": "^6.26.0",
